@@ -1,0 +1,67 @@
+from fastapi.testclient import TestClient
+
+from devtoolbox.main import app
+
+client = TestClient(app)
+
+
+def test_pages_are_served() -> None:
+    for path, marker in [
+        ("/", "DevToolbox"),
+        ("/tools/json", "JSON 自动修复与格式化"),
+        ("/tools/text-diff", "文本对比"),
+    ]:
+        response = client.get(path)
+
+        assert response.status_code == 200
+        assert marker in response.text
+
+
+def test_home_page_does_not_show_service_overview_card() -> None:
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert "工具状态概览" not in response.text
+    assert "本地服务" not in response.text
+    assert "FastAPI + 原生前端" not in response.text
+
+
+def test_json_api_repair_and_format() -> None:
+    repair_response = client.post("/api/json/repair", json={"text": "{'a': 1, 'b': [2,]}"})
+    format_response = client.post("/api/json/format", json={"text": '{"a":1}'})
+
+    assert repair_response.status_code == 200
+    assert repair_response.json()["valid"] is True
+    assert format_response.status_code == 200
+    assert format_response.json()["formatted"] == '{\n  "a": 1\n}'
+
+
+def test_text_diff_api_plain_text() -> None:
+    response = client.post(
+        "/api/text-diff/compare",
+        json={"left_text": "a\nb", "right_text": "a\nc\nd", "markdown_render": False},
+    )
+
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["mode"] == "text"
+    assert payload["stats"]["same"] == 1
+    assert payload["stats"]["modified"] == 1
+    assert payload["stats"]["added"] == 1
+
+
+def test_text_diff_api_markdown_render() -> None:
+    response = client.post(
+        "/api/text-diff/compare",
+        json={
+            "left_text": "# A\n\n<script>alert(1)</script>\n\nold",
+            "right_text": "# A\n\nnew",
+            "markdown_render": True,
+        },
+    )
+
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["mode"] == "markdown-render"
+    assert "<script>" not in payload["left_rendered_html"]
+    assert payload["stats"]["same"] == 1

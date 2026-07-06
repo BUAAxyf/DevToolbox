@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>文本对比 - DevToolbox</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell diff-shell">
+      <header class="top-nav">
+        <a class="brand" href="/">
+          <span class="brand-mark">DT</span>
+          <span>DevToolbox</span>
+        </a>
+        <nav class="nav-links" aria-label="工具导航">
+          <a href="/tools/json">JSON 修复</a>
+          <a class="active" href="/tools/text-diff">文本对比</a>
+        </nav>
+      </header>
+
+      <section class="tool-header">
+        <div>
+          <p class="eyebrow">text diff</p>
+          <h1>文本对比</h1>
+          <p>粘贴或导入两段文本，按行对比差异；开启 Markdown 渲染后，会先渲染并清洗，再对可见内容做 diff。</p>
+        </div>
+        <div class="toolbar diff-toolbar" aria-label="文本对比工具栏">
+          <label class="toggle-field" for="markdownToggle">
+            <input id="markdownToggle" type="checkbox" />
+            <span>Markdown 渲染</span>
+          </label>
+          <button id="swapButton" class="button secondary" type="button">交换两侧</button>
+          <button id="compareButton" class="button primary" type="button">重新对比</button>
+        </div>
+      </section>
+
+      <section class="diff-input-grid" aria-label="文本输入区">
+        <article class="workspace-card">
+          <div class="workspace-title">
+            <span>左侧文本</span>
+            <label class="file-button">
+              导入文件
+              <input id="leftFile" type="file" accept=".txt,.md,.markdown,text/plain,text/markdown" />
+            </label>
+          </div>
+          <input id="leftName" class="name-input" type="text" value="left.txt" aria-label="左侧名称" />
+          <textarea id="leftText" class="diff-textarea" spellcheck="false"># DevToolbox
+
+- JSON repair
+- Text diff</textarea>
+        </article>
+
+        <article class="workspace-card">
+          <div class="workspace-title">
+            <span>右侧文本</span>
+            <label class="file-button">
+              导入文件
+              <input id="rightFile" type="file" accept=".txt,.md,.markdown,text/plain,text/markdown" />
+            </label>
+          </div>
+          <input id="rightName" class="name-input" type="text" value="right.txt" aria-label="右侧名称" />
+          <textarea id="rightText" class="diff-textarea" spellcheck="false"># DevToolbox
+
+- JSON repair
+- Markdown render diff
+- Text diff</textarea>
+        </article>
+      </section>
+
+      <section class="diff-board" aria-label="差异结果">
+        <aside class="diff-summary" aria-label="差异统计">
+          <div class="summary-metric add"><strong id="addCount">0</strong><span>新增</span></div>
+          <div class="summary-metric del"><strong id="delCount">0</strong><span>删除</span></div>
+          <div class="summary-metric mod"><strong id="modCount">0</strong><span>修改</span></div>
+          <div class="summary-metric same"><strong id="sameCount">0</strong><span>相同</span></div>
+          <p id="diffModeLabel" class="mode-note">普通文本模式</p>
+        </aside>
+
+        <div class="diff-stage">
+          <div class="diff-pane-title">
+            <span id="leftRevision">left.txt</span>
+            <span id="rightRevision">right.txt</span>
+          </div>
+          <div class="diff-table-wrap">
+            <table class="diff-table" aria-label="文本差异表格">
+              <thead>
+                <tr>
+                  <th>左行</th>
+                  <th>左侧内容</th>
+                  <th>右行</th>
+                  <th>右侧内容</th>
+                </tr>
+              </thead>
+              <tbody id="diffRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <p id="diffStatus" class="status" role="status">等待对比</p>
+    </main>
+
+    <script src="/static/text_diff.js"></script>
+  </body>
+</html>
+

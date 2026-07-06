@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevToolbox</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell home-shell">
+      <header class="top-nav">
+        <a class="brand" href="/" aria-label="DevToolbox 首页">
+          <span class="brand-mark">DT</span>
+          <span>DevToolbox</span>
+        </a>
+        <nav class="nav-links" aria-label="工具导航">
+          <a href="/tools/json">JSON 修复</a>
+          <a href="/tools/text-diff">文本对比</a>
+        </nav>
+      </header>
+
+      <section class="home-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">local developer workbench</p>
+          <h1>DevToolbox</h1>
+          <p>一个本地运行的开发工具台，首期提供 JSON 自动修复与格式化、文本/Markdown 渲染对比。</p>
+        </div>
+      </section>
+
+      <section class="tool-grid" aria-label="工具列表">
+        <a class="tool-card primary-tool" href="/tools/json">
+          <span class="tool-kicker">JSON</span>
+          <h2>自动修复与格式化</h2>
+          <p>粘贴不规范 JSON、类 Python 字典或尾逗号文本，自动修复并输出可折叠的格式化结果。</p>
+          <span class="tool-action">打开工具</span>
+        </a>
+
+        <a class="tool-card accent-tool" href="/tools/text-diff">
+          <span class="tool-kicker">DIFF</span>
+          <h2>文本对比</h2>
+          <p>支持普通文本对比，也可勾选 Markdown 渲染后再计算差异，适合审阅文档和 Prompt 修改。</p>
+          <span class="tool-action">打开工具</span>
+        </a>
+
+        <article class="tool-card muted-tool" aria-label="Markdown 渲染工具规划">
+          <span class="tool-kicker">NEXT</span>
+          <h2>Markdown 渲染</h2>
+          <p>独立 Markdown 渲染页会在后续加入；当前可在文本对比工具中启用 Markdown 渲染模式。</p>
+          <span class="tool-action disabled">规划中</span>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,31 @@
+2026-07-05 20:00 Asia/Shanghai
+- 初始化任务：根据用户计划创建 DevToolbox 本地开发工具包。
+- 关键决策：采用单一 FastAPI 后端与原生 HTML/CSS/JS 前端；首期实现主页、JSON 自动修复与格式化、文本对比；Markdown 渲染作为文本对比工具中的勾选模式。
+- 工程同步：初始化 requirements.txt、.gitignore、tests/、README.md 与 devtoolbox 包结构。
+- 验证记录：
+  - python3 -m py_compile devtoolbox/main.py devtoolbox/services/json_service.py devtoolbox/services/text_diff_service.py：通过。
+  - .venv/bin/python -m pytest：11 passed，1 个来自 FastAPI/TestClient 的 StarletteDeprecationWarning。
+  - uvicorn devtoolbox.main:app --host 127.0.0.1 --port 8000：端口已被占用，未 kill 占用进程。
+  - uvicorn devtoolbox.main:app --host 127.0.0.1 --port 8010：启动成功。
+  - curl /health、主页、JSON 工具页、文本对比工具页：通过。
+  - curl /api/json/repair、/api/text-diff/compare：有效 payload 验证通过；期间一次手写 curl payload 引号错误返回 422，非服务实现问题。
+  - 浏览器关键路径：主页 3 个工具卡片可见；JSON 页面输入类 Python 字典后可自动修复并格式化；文本对比页勾选 Markdown 渲染后得到 1 条相同、1 条修改。
+
+2026-07-05 20:00 Asia/Shanghai
+- 修复 CLI 启动命令：支持直接执行 devtoolbox/main.py 并传入 --host、--port、--reload。
+- 兼容命令：/Users/xieyifei.10/PycharmProjects/DevToolbox/.venv/bin/python /Users/xieyifei.10/PycharmProjects/DevToolbox/devtoolbox/main.py --host 127.0.0.1 --port 8010 --reload。
+- 文档同步：README.md 快速开始补充 PyCharm 适用的直接入口命令。
+- 验证记录：
+  - python3 -m py_compile devtoolbox/main.py：通过。
+  - .venv/bin/python -m pytest：13 passed，1 个来自 FastAPI/TestClient 的 StarletteDeprecationWarning。
+  - 直接入口命令启动：成功监听 http://127.0.0.1:8010，--reload 生效。
+  - curl http://127.0.0.1:8010/health：返回 {"ok":true}。
+  - curl http://127.0.0.1:8010/：首页返回 DevToolbox 标记。
+  - 验证结束后已停止测试服务，避免占用 PyCharm 启动端口。
+
+2026-07-06 Asia/Shanghai
+- 页面调整：根据截图红框，移除首页 hero 区右侧“本地服务 / FastAPI + 原生前端 / 无需外部账号”说明卡片。
+- 同步修改：清理对应 hero-panel CSS，并新增首页接口测试，确保该服务概览卡片不再渲染。
+- 验证记录：
+  - .venv/bin/python -m pytest：14 passed，1 个来自 FastAPI/TestClient 的 StarletteDeprecationWarning。
+  - rg 检查：红框内容不再存在于首页 HTML 和样式文件，仅保留在测试的反向断言中。

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON 自动修复与格式化 - DevToolbox</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="top-nav">
+        <a class="brand" href="/">
+          <span class="brand-mark">DT</span>
+          <span>DevToolbox</span>
+        </a>
+        <nav class="nav-links" aria-label="工具导航">
+          <a class="active" href="/tools/json">JSON 修复</a>
+          <a href="/tools/text-diff">文本对比</a>
+        </nav>
+      </header>
+
+      <section class="tool-header">
+        <div>
+          <p class="eyebrow">json repair</p>
+          <h1>JSON 自动修复与格式化</h1>
+          <p>左侧粘贴原始内容，右侧自动修复；格式化视图支持层级折叠和字号调整。</p>
+        </div>
+        <div class="toolbar" aria-label="JSON 工具栏">
+          <label class="control-field" for="fontSizeInput">
+            字号
+            <input id="fontSizeInput" type="number" min="11" max="24" step="1" value="14" />
+          </label>
+          <button id="formatButton" class="button primary" type="button" data-mode="repaired">格式化</button>
+          <button id="copyResultButton" class="button secondary" type="button">复制结果</button>
+        </div>
+      </section>
+
+      <section class="editor-grid" aria-label="JSON 编辑区">
+        <article class="workspace-card">
+          <div class="workspace-title">
+            <span>原始输入</span>
+            <button id="clearInputButton" class="ghost-button" type="button">清空</button>
+          </div>
+          <div class="editor-shell input-shell">
+            <pre id="rawLineNumbers" class="line-numbers" aria-hidden="true">1</pre>
+            <textarea id="rawInput" spellcheck="false" placeholder="在这里粘贴可能不规范的 JSON / Python dict 文本"></textarea>
+          </div>
+        </article>
+
+        <article class="workspace-card">
+          <div class="workspace-title">
+            <span>修复 / 格式化结果</span>
+            <span id="resultModeLabel" class="soft-badge">修复视图</span>
+          </div>
+          <div id="resultViewer" class="editor-shell result-viewer" role="region" aria-label="修复和格式化结果">
+            <pre id="resultLineNumbers" class="line-numbers" aria-hidden="true">1</pre>
+            <div id="foldGutter" class="fold-gutter" aria-label="层级折叠控制"></div>
+            <pre id="resultOutput" class="code-output" tabindex="0" aria-label="修复和格式化后的 JSON"></pre>
+          </div>
+        </article>
+      </section>
+
+      <p id="status" class="status" role="status">等待输入</p>
+    </main>
+
+    <script src="/static/json_tool.js"></script>
+  </body>
+</html>
+
