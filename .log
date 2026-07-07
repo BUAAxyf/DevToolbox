@@ -41,3 +41,25 @@
   - uvicorn 端口检查：127.0.0.1:8000 与 127.0.0.1:8010 均已被占用，未 kill 占用进程；改用 127.0.0.1:8020 启动验证服务。
   - curl /health、/tools/markdown、首页 Markdown 入口、/api/markdown/render：通过。
   - 浏览器关键路径：在 /tools/markdown 输入带字面量 \n 的 raw 文本，点击“转义符转义”后左侧回填真实换行，右侧成功渲染 h1、h2、段落和表格。
+
+2026-07-07 Asia/Shanghai
+- 问题修复：文本对比模块 Markdown 渲染模式中，列表项可见文本原先显示为 "- item"，与 Markdown 渲染模块的列表视觉表现不一致。
+- 实现方式：新增底层 markdown_renderer 共享安全渲染函数，Markdown 渲染模块和文本对比模块分别依赖该底层工具，避免两个业务模块互相耦合。
+- 行为变更：文本对比模块从渲染后 HTML 提取列表项可见文本时，使用 "· " 作为列表项标记。
+- 验证记录：
+  - python3 -m py_compile devtoolbox/services/markdown_renderer.py devtoolbox/services/markdown_service.py devtoolbox/services/text_diff_service.py devtoolbox/main.py：通过。
+  - .venv/bin/python -m pytest：25 passed，1 个来自 FastAPI/TestClient 的 StarletteDeprecationWarning。
+  - uvicorn 临时启动在 127.0.0.1:8030，curl /health 返回 {"ok":true}。
+  - curl /api/text-diff/compare，输入 "- old" 与 "- new" 且 markdown_render=true，返回 diff 行为 "· old" 与 "· new"。
+  - 验证结束后已停止 8030 临时服务。
+
+2026-07-07 Asia/Shanghai
+- 扩展检查：继续核对文本对比模块 Markdown 模式对标题、HTML 段落、引用、无序列表、有序列表、表格、行内代码、代码块、分隔线、链接、图片、br 换行等常见语法的处理。
+- 修复内容：文本对比可见文本抽取补齐有序列表编号、表格行聚合、分隔线行、图片 alt 可见标记和表格单元格内换行处理；继续使用底层 markdown_renderer 保持与 Markdown 渲染模块安全 HTML 规则一致，两个业务模块不互相 import。
+- 测试补齐：新增综合语法测试，断言文本对比 Markdown 模式返回的安全 HTML 与 Markdown 渲染模块一致，并固定 diff 行中 "· item"、"1. item"、"字段 | 值"、"---"、"[图片: alt]" 等可见文本行为。
+- 验证记录：
+  - python3 -m py_compile devtoolbox/services/markdown_renderer.py devtoolbox/services/markdown_service.py devtoolbox/services/text_diff_service.py devtoolbox/main.py：通过。
+  - .venv/bin/python -m pytest：29 passed，1 个来自 FastAPI/TestClient 的 StarletteDeprecationWarning。
+  - uvicorn 临时启动在 127.0.0.1:8040，curl /health 返回 {"ok":true}。
+  - curl /api/text-diff/compare 综合 Markdown payload：返回 mode=markdown-render，diff 行包含 "· 左项"、"1. 有序"、"字段 | 值"、"A | B/A | C"、"---"、"[图片: 旧图/新图]"。
+  - 验证结束后已停止 8040 临时服务。

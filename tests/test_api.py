@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from devtoolbox.main import app
+from devtoolbox.services.markdown_service import render_markdown_text
 
 client = TestClient(app)
 
@@ -66,6 +67,41 @@ def test_text_diff_api_markdown_render() -> None:
     assert payload["mode"] == "markdown-render"
     assert "<script>" not in payload["left_rendered_html"]
     assert payload["stats"]["same"] == 1
+
+
+def test_text_diff_api_markdown_render_uses_bullet_marker() -> None:
+    response = client.post(
+        "/api/text-diff/compare",
+        json={"left_text": "- old", "right_text": "- new", "markdown_render": True},
+    )
+
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["rows"][0]["left"] == "· old"
+    assert payload["rows"][0]["right"] == "· new"
+
+
+def test_text_diff_api_markdown_render_matches_markdown_tool_html() -> None:
+    markdown_text = """# 标题
+
+<p>正文</p>
+
+- 无序项
+
+| 字段 | 值 |
+| --- | --- |
+| A | B |
+"""
+    response = client.post(
+        "/api/text-diff/compare",
+        json={"left_text": markdown_text, "right_text": markdown_text, "markdown_render": True},
+    )
+
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["left_rendered_html"] == render_markdown_text(markdown_text)
+    assert payload["right_rendered_html"] == render_markdown_text(markdown_text)
+    assert any(row["left"] == "字段 | 值" for row in payload["rows"])
 
 
 def test_markdown_page_contains_editor_and_preview() -> None:

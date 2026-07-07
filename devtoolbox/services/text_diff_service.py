@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 from html.parser import HTMLParser
 
-from devtoolbox.services.markdown_service import render_markdown_text
+from devtoolbox.services.markdown_renderer import render_markdown_html
 
 
 @dataclass(frozen=True)
@@ -78,17 +78,55 @@ class VisibleTextParser(HTMLParser):
         super().__init__(convert_charrefs=True)
         self._lines: list[str] = []
         self._parts: list[str] = []
+        self._list_stack: list[dict[str, int | str]] = []
+        self._table_row: list[str] | None = None
+        self._cell_parts: list[str] | None = None
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         if tag == "br":
+            self._handle_line_break()
+            return
+        if tag == "ul":
             self._flush_line()
+            self._list_stack.append({"type": "ul", "index": 0})
+            return
+        if tag == "ol":
+            self._flush_line()
+            self._list_stack.append({"type": "ol", "index": 1})
+            return
+        if tag == "li":
+            self._flush_line()
+            self._append_text(self._next_list_marker())
+            return
+        if tag == "hr":
+            self._flush_line()
+            self._append_line("---")
+            return
+        if tag == "tr":
+            self._flush_line()
+            self._table_row = []
+            return
+        if tag in {"td", "th"}:
+            self._cell_parts = []
+            return
+        if tag == "img":
+            self._append_text(_image_visible_text(attrs))
             return
         if tag in _BLOCK_TAGS:
             self._flush_line()
-        if tag == "li":
-            self._parts.append("- ")
 
     def handle_endtag(self, tag: str) -> None:
+        if tag in {"td", "th"}:
+            self._flush_cell()
+            return
+        if tag == "tr":
+            self._flush_table_row()
+            return
+        if tag in {"ul", "ol"}:
+            self._flush_line()
+            if self._list_stack:
+                self._list_stack.pop()
+            return
         if tag in _BLOCK_TAGS:
             self._flush_line()
 
@@ -96,21 +134,70 @@ class VisibleTextParser(HTMLParser):
         pieces = data.replace("\r\n", "\n").replace("\r", "\n").split("\n")
         for index, piece in enumerate(pieces):
             if index > 0:
-                self._flush_line()
+                self._handle_line_break()
             if piece:
-                self._parts.append(piece)
+                self._append_text(piece)
 
     def lines(self) -> list[str]:
         self._flush_line()
         return [line for line in self._lines if line]
 
+    def _append_text(self, text: str) -> None:
+        if not text:
+            return
+        if self._cell_parts is not None:
+            self._cell_parts.append(text)
+            return
+        self._parts.append(text)
+
+    def _append_line(self, text: str) -> None:
+        line = _normalize_visible_text(text)
+        if line:
+            self._lines.append(line)
+
+    def _handle_line_break(self) -> None:
+        if self._cell_parts is not None:
+            self._cell_parts.append(" ")
+            return
+        self._flush_line()
+
     def _flush_line(self) -> None:
         if not self._parts:
             return
         line = _normalize_visible_text("".join(self._parts))
-        if line:
-            self._lines.append(line)
+        self._append_line(line)
         self._parts = []
+
+    def _flush_cell(self) -> None:
+        if self._cell_parts is None:
+            return
+        cell = _normalize_visible_text("".join(self._cell_parts))
+        if self._table_row is not None:
+            self._table_row.append(cell)
+        elif cell:
+            self._append_line(cell)
+        self._cell_parts = None
+
+    def _flush_table_row(self) -> None:
+        if self._cell_parts is not None:
+            self._flush_cell()
+        if self._table_row is None:
+            return
+        cells = [cell for cell in self._table_row if cell]
+        if cells:
+            self._append_line(" | ".join(cells))
+        self._table_row = None
+
+    def _next_list_marker(self) -> str:
+        if not self._list_stack:
+            return "· "
+
+        current_list = self._list_stack[-1]
+        if current_list["type"] == "ol":
+            index = int(current_list["index"])
+            current_list["index"] = index + 1
+            return f"{index}. "
+        return "· "
 
 
 def compare_texts(
@@ -152,7 +239,7 @@ def compare_texts(
 
 
 def render_markdown_safe(text: str) -> str:
-    return render_markdown_text(text)
+    return render_markdown_html(text)
 
 
 def html_visible_lines(html_text: str) -> list[str]:
@@ -259,3 +346,14 @@ def _diff_lines(left: list[str], right: list[str]) -> list[dict[str, str]]:
 
 def _normalize_visible_text(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
+
+
+def _image_visible_text(attrs: list[tuple[str, str | None]]) -> str:
+    attr_map = {name: value for name, value in attrs if value}
+    alt = attr_map.get("alt", "").strip()
+    src = attr_map.get("src", "").strip()
+    if alt:
+        return f"[图片: {alt}]"
+    if src:
+        return f"[图片: {src}]"
+    return "[图片]"
