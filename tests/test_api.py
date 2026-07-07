@@ -10,6 +10,7 @@ def test_pages_are_served() -> None:
         ("/", "DevToolbox"),
         ("/tools/json", "JSON 自动修复与格式化"),
         ("/tools/text-diff", "文本对比"),
+        ("/tools/markdown", "Markdown 渲染"),
     ]:
         response = client.get(path)
 
@@ -65,3 +66,39 @@ def test_text_diff_api_markdown_render() -> None:
     assert payload["mode"] == "markdown-render"
     assert "<script>" not in payload["left_rendered_html"]
     assert payload["stats"]["same"] == 1
+
+
+def test_markdown_page_contains_editor_and_preview() -> None:
+    response = client.get("/tools/markdown")
+
+    assert response.status_code == 200
+    assert 'id="markdownInput"' in response.text
+    assert 'id="markdownPreview"' in response.text
+    assert 'id="decodeEscapesButton"' in response.text
+
+
+def test_markdown_render_api() -> None:
+    response = client.post(
+        "/api/markdown/render",
+        json={"text": "# 标题\n\n<p>正文</p>", "decode_escapes": False},
+    )
+
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["decoded"] is False
+    assert payload["source"] == "# 标题\n\n<p>正文</p>"
+    assert "<h1>标题</h1>" in payload["html"]
+    assert "<p>正文</p>" in payload["html"]
+
+
+def test_markdown_render_api_decodes_escapes() -> None:
+    response = client.post(
+        "/api/markdown/render",
+        json={"text": r"# 标题\n\n<p>正文</p>", "decode_escapes": True},
+    )
+
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["decoded"] is True
+    assert payload["source"] == "# 标题\n\n<p>正文</p>"
+    assert "<h1>标题</h1>" in payload["html"]

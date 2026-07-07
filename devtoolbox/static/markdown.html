@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown 渲染 - DevToolbox</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell markdown-shell">
+      <header class="top-nav">
+        <a class="brand" href="/">
+          <span class="brand-mark">DT</span>
+          <span>DevToolbox</span>
+        </a>
+        <nav class="nav-links" aria-label="工具导航">
+          <a href="/tools/json">JSON 修复</a>
+          <a href="/tools/text-diff">文本对比</a>
+          <a class="active" href="/tools/markdown">Markdown 渲染</a>
+        </nav>
+      </header>
+
+      <section class="tool-header">
+        <div>
+          <p class="eyebrow">markdown renderer</p>
+          <h1>Markdown 渲染</h1>
+          <p>左侧粘贴 raw Markdown 文本，右侧实时显示清洗后的渲染结果；可一键把 \n 等转义符转换为真实换行。</p>
+        </div>
+        <div class="toolbar" aria-label="Markdown 工具栏">
+          <button id="decodeEscapesButton" class="button primary" type="button">转义符转义</button>
+          <button id="clearMarkdownButton" class="button secondary" type="button">清空</button>
+        </div>
+      </section>
+
+      <section class="markdown-grid" aria-label="Markdown 渲染区">
+        <article class="workspace-card markdown-card">
+          <div class="workspace-title">
+            <span>Raw 文本</span>
+            <span id="sourceStats" class="soft-badge">0 字</span>
+          </div>
+          <textarea
+            id="markdownInput"
+            class="markdown-textarea"
+            spellcheck="false"
+            placeholder="粘贴 Markdown 文本；如果文本里包含字面量 \n，点击“转义符转义”转换为真实换行"
+          ># 示例标题\n\n&lt;p&gt;这里是一段 HTML 段落&lt;/p&gt;\n\n- 列表项\n- 支持表格、引用块和安全链接</textarea>
+        </article>
+
+        <article class="workspace-card markdown-card">
+          <div class="workspace-title">
+            <span>渲染结果</span>
+            <span id="renderModeLabel" class="soft-badge">实时预览</span>
+          </div>
+          <div id="markdownPreview" class="markdown-preview" aria-label="Markdown 渲染结果"></div>
+        </article>
+      </section>
+
+      <p id="markdownStatus" class="status" role="status">等待渲染</p>
+    </main>
+
+    <script src="/static/markdown_tool.js"></script>
+  </body>
+</html>
+

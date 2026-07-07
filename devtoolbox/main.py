@@ -15,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from devtoolbox.services.json_service import format_text, repair_text
+from devtoolbox.services.markdown_service import render_markdown_payload
 from devtoolbox.services.text_diff_service import compare_texts
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -69,6 +70,18 @@ class TextDiffResponse(BaseModel):
     right_rendered_html: str | None = None
 
 
+class MarkdownRenderRequest(BaseModel):
+    text: str
+    decode_escapes: bool = False
+
+
+class MarkdownRenderResponse(BaseModel):
+    html: str
+    source: str
+    decoded: bool
+    error: str | None = None
+
+
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
@@ -82,6 +95,11 @@ def json_tool() -> FileResponse:
 @app.get("/tools/text-diff")
 def text_diff_tool() -> FileResponse:
     return FileResponse(STATIC_DIR / "text_diff.html")
+
+
+@app.get("/tools/markdown")
+def markdown_tool() -> FileResponse:
+    return FileResponse(STATIC_DIR / "markdown.html")
 
 
 @app.get("/health")
@@ -111,6 +129,12 @@ def compare_text(payload: TextDiffRequest) -> TextDiffResponse:
         markdown_render=payload.markdown_render,
     )
     return TextDiffResponse(**asdict(result))
+
+
+@app.post("/api/markdown/render", response_model=MarkdownRenderResponse)
+def render_markdown(payload: MarkdownRenderRequest) -> MarkdownRenderResponse:
+    result = render_markdown_payload(payload.text, decode_escapes=payload.decode_escapes)
+    return MarkdownRenderResponse(**asdict(result))
 
 
 def parse_cli_args(argv: list[str] | None = None) -> argparse.Namespace:

@@ -4,8 +4,7 @@ import re
 from dataclasses import dataclass
 from html.parser import HTMLParser
 
-import bleach
-import markdown
+from devtoolbox.services.markdown_service import render_markdown_text
 
 
 @dataclass(frozen=True)
@@ -37,50 +36,6 @@ class TextDiffResult:
     right_rendered_html: str | None = None
 
 
-_MARKDOWN_EXTENSIONS = ["extra", "sane_lists", "smarty"]
-_ALLOWED_TAGS = [
-    "a",
-    "abbr",
-    "blockquote",
-    "br",
-    "code",
-    "dd",
-    "del",
-    "div",
-    "dl",
-    "dt",
-    "em",
-    "h1",
-    "h2",
-    "h3",
-    "h4",
-    "h5",
-    "h6",
-    "hr",
-    "ins",
-    "li",
-    "ol",
-    "p",
-    "pre",
-    "span",
-    "strong",
-    "table",
-    "tbody",
-    "td",
-    "th",
-    "thead",
-    "tr",
-    "ul",
-]
-_ALLOWED_ATTRIBUTES = {
-    "a": ["href", "title"],
-    "abbr": ["title"],
-    "code": ["class"],
-    "span": ["class"],
-    "th": ["align"],
-    "td": ["align"],
-}
-_ALLOWED_PROTOCOLS = ["http", "https", "mailto"]
 _BLOCK_TAGS = {
     "address",
     "article",
@@ -197,14 +152,7 @@ def compare_texts(
 
 
 def render_markdown_safe(text: str) -> str:
-    raw_html = markdown.markdown(text or "", extensions=_MARKDOWN_EXTENSIONS, output_format="html5")
-    return bleach.clean(
-        raw_html,
-        tags=_ALLOWED_TAGS,
-        attributes=_ALLOWED_ATTRIBUTES,
-        protocols=_ALLOWED_PROTOCOLS,
-        strip=True,
-    )
+    return render_markdown_text(text)
 
 
 def html_visible_lines(html_text: str) -> list[str]:
@@ -311,4 +259,3 @@ def _diff_lines(left: list[str], right: list[str]) -> list[dict[str, str]]:
 
 def _normalize_visible_text(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
-

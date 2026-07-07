@@ -297,7 +297,8 @@ h2 {
 }
 
 .editor-grid,
-.diff-input-grid {
+.diff-input-grid,
+.markdown-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
@@ -479,6 +480,149 @@ h2 {
   line-height: 1.55;
 }
 
+.markdown-card {
+  min-height: 68vh;
+}
+
+.markdown-textarea {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: none;
+  resize: none;
+  background: var(--code-bg);
+  color: var(--ink);
+  padding: 14px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.markdown-textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(36, 87, 214, 0.13);
+}
+
+.markdown-preview {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 18px;
+  color: var(--ink);
+  line-height: 1.72;
+  overflow-wrap: anywhere;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  margin: 1.15em 0 0.55em;
+  color: var(--graphite);
+  line-height: 1.2;
+}
+
+.markdown-preview h1:first-child,
+.markdown-preview h2:first-child,
+.markdown-preview h3:first-child {
+  margin-top: 0;
+}
+
+.markdown-preview h1 {
+  font-size: 30px;
+}
+
+.markdown-preview h2 {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+  font-size: 23px;
+}
+
+.markdown-preview h3 {
+  font-size: 19px;
+}
+
+.markdown-preview h4 {
+  font-size: 16px;
+}
+
+.markdown-preview p,
+.markdown-preview ul,
+.markdown-preview ol,
+.markdown-preview blockquote,
+.markdown-preview table,
+.markdown-preview pre {
+  margin: 0 0 14px;
+}
+
+.markdown-preview blockquote {
+  border-left: 4px solid var(--blue);
+  background: #f4f7fb;
+  color: var(--graphite);
+  padding: 12px 14px;
+}
+
+.markdown-preview pre,
+.markdown-preview code {
+  border-radius: 6px;
+  background: #f1f5f8;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+}
+
+.markdown-preview code {
+  padding: 2px 5px;
+}
+
+.markdown-preview pre {
+  overflow: auto;
+  padding: 12px;
+}
+
+.markdown-preview pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.markdown-preview table {
+  display: block;
+  width: 100%;
+  overflow: auto;
+  border-collapse: collapse;
+}
+
+.markdown-preview th,
+.markdown-preview td {
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  vertical-align: top;
+}
+
+.markdown-preview th {
+  background: var(--surface-strong);
+  color: var(--graphite);
+  font-weight: 900;
+}
+
+.markdown-preview img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.empty-preview {
+  color: var(--muted);
+  font-weight: 800;
+}
+
 .diff-input-grid .workspace-card {
   min-height: 390px;
 }
@@ -654,6 +798,7 @@ tr.context-row td {
   .tool-header,
   .editor-grid,
   .diff-input-grid,
+  .markdown-grid,
   .diff-board {
     grid-template-columns: 1fr;
   }

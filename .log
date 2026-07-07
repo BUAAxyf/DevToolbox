@@ -29,3 +29,15 @@
 - 验证记录：
   - .venv/bin/python -m pytest：14 passed，1 个来自 FastAPI/TestClient 的 StarletteDeprecationWarning。
   - rg 检查：红框内容不再存在于首页 HTML 和样式文件，仅保留在测试的反向断言中。
+
+2026-07-06 Asia/Shanghai
+- 功能开发：新增独立 Markdown 渲染模块，左侧 raw 文本输入，右侧实时安全渲染结果。
+- 关键设计：复用 markdown + bleach 清洗策略；普通图片 URL 按标准 Markdown 文本处理，标准 Markdown 图片语法才显示图片。
+- 交互设计：新增“转义符转义”按钮，将 \n、\t、\\、\"、\uXXXX 等常见转义转换为真实含义并回填输入框。
+- 工程同步：新增 markdown_service、Markdown 页面与脚本；更新首页、工具页导航、README 和测试。
+- 验证记录：
+  - python3 -m py_compile devtoolbox/main.py devtoolbox/services/markdown_service.py devtoolbox/services/text_diff_service.py：通过。
+  - .venv/bin/python -m pytest：22 passed，1 个来自 FastAPI/TestClient 的 StarletteDeprecationWarning。
+  - uvicorn 端口检查：127.0.0.1:8000 与 127.0.0.1:8010 均已被占用，未 kill 占用进程；改用 127.0.0.1:8020 启动验证服务。
+  - curl /health、/tools/markdown、首页 Markdown 入口、/api/markdown/render：通过。
+  - 浏览器关键路径：在 /tools/markdown 输入带字面量 \n 的 raw 文本，点击“转义符转义”后左侧回填真实换行，右侧成功渲染 h1、h2、段落和表格。
