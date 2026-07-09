@@ -12,6 +12,7 @@ def test_pages_are_served() -> None:
         ("/tools/json", "JSON 自动修复与格式化"),
         ("/tools/text-diff", "文本对比"),
         ("/tools/markdown", "Markdown 渲染"),
+        ("/tools/timestamp", "时间戳转换"),
     ]:
         response = client.get(path)
 
@@ -138,3 +139,105 @@ def test_markdown_render_api_decodes_escapes() -> None:
     assert payload["decoded"] is True
     assert payload["source"] == "# 标题\n\n<p>正文</p>"
     assert "<h1>标题</h1>" in payload["html"]
+
+
+def test_timestamp_page_contains_expected_controls() -> None:
+    response = client.get("/tools/timestamp")
+
+    assert response.status_code == 200
+    for marker in [
+        'class="timestamp-workbench"',
+        'class="workspace-card timestamp-card timestamp-now-card"',
+        'class="workspace-card timestamp-card timestamp-converter-card"',
+        "当前时间",
+        "日期时间 -&gt; 时间戳",
+        "时间戳 -&gt; 日期时间",
+        'id="currentTimestamp"',
+        'id="toggleUnitButton"',
+        'id="copyCurrentButton"',
+        'id="pauseNowButton"',
+        'id="timestampToDateButton"',
+        'id="dateToTimestampButton"',
+    ]:
+        assert marker in response.text
+
+
+def test_timestamp_page_hides_batch_conversion_controls() -> None:
+    response = client.get("/tools/timestamp")
+
+    assert response.status_code == 200
+    for marker in [
+        'id="batchTab"',
+        'id="batchPanel"',
+        'id="batchConvertButton"',
+        'id="batchInput"',
+        "批量转换",
+    ]:
+        assert marker not in response.text
+
+
+def test_home_page_links_to_timestamp_tool() -> None:
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert "/tools/timestamp" in response.text
+    assert "时间戳转换" in response.text
+
+
+def test_timestamp_now_api() -> None:
+    response = client.get("/api/timestamp/now", params={"timezone": "Asia/Shanghai", "unit": "milliseconds"})
+
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["valid"] is True
+    assert payload["unit"] == "milliseconds"
+    assert payload["timezone"] == "Asia/Shanghai"
+    assert payload["timestamp"].isdigit()
+    assert len(payload["timestamp"]) >= 13
+
+
+def test_timestamp_conversion_apis() -> None:
+    to_datetime = client.post(
+        "/api/timestamp/to-datetime",
+        json={"timestamp": "1782180714232", "timezone": "Asia/Shanghai", "unit": "milliseconds"},
+    )
+    from_datetime = client.post(
+        "/api/timestamp/from-datetime",
+        json={"datetime_text": "2026-06-23 10:11:54", "timezone": "Asia/Shanghai", "unit": "seconds"},
+    )
+
+    assert to_datetime.status_code == 200
+    assert to_datetime.json()["result"] == "2026-06-23 10:11:54.232"
+    assert from_datetime.status_code == 200
+    assert from_datetime.json()["result"] == "1782180714"
+
+
+def test_timestamp_batch_api_allows_partial_failures() -> None:
+    response = client.post(
+        "/api/timestamp/batch",
+        json={
+            "text": "1782180714232\ninvalid\n1782180715000",
+            "mode": "to-datetime",
+            "timezone": "Asia/Shanghai",
+            "unit": "milliseconds",
+        },
+    )
+
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["valid"] is False
+    assert payload["rows"][0]["result"] == "2026-06-23 10:11:54.232"
+    assert payload["rows"][1]["valid"] is False
+    assert payload["rows"][2]["result"] == "2026-06-23 10:11:55"
+
+
+def test_timestamp_api_returns_readable_errors() -> None:
+    response = client.post(
+        "/api/timestamp/from-datetime",
+        json={"datetime_text": "", "timezone": "Asia/Shanghai", "unit": "seconds"},
+    )
+
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["valid"] is False
+    assert "请输入日期时间" in payload["error"]

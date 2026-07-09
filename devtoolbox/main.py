@@ -17,6 +17,12 @@ from pydantic import BaseModel
 from devtoolbox.services.json_service import format_text, repair_text
 from devtoolbox.services.markdown_service import render_markdown_payload
 from devtoolbox.services.text_diff_service import compare_texts
+from devtoolbox.services.timestamp_service import (
+    batch_convert,
+    current_timestamp,
+    datetime_to_timestamp,
+    timestamp_to_datetime,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -82,6 +88,59 @@ class MarkdownRenderResponse(BaseModel):
     error: str | None = None
 
 
+class TimestampNowResponse(BaseModel):
+    timestamp: str
+    unit: str
+    datetime_text: str
+    timezone: str
+    valid: bool
+    error: str | None = None
+
+
+class TimestampToDatetimeRequest(BaseModel):
+    timestamp: str
+    unit: str = "seconds"
+    timezone: str = "Asia/Shanghai"
+
+
+class TimestampFromDatetimeRequest(BaseModel):
+    datetime_text: str
+    unit: str = "seconds"
+    timezone: str = "Asia/Shanghai"
+
+
+class TimestampConvertResponse(BaseModel):
+    result: str
+    unit: str
+    timezone: str
+    valid: bool
+    error: str | None = None
+
+
+class TimestampBatchRequest(BaseModel):
+    text: str
+    mode: str
+    unit: str = "seconds"
+    timezone: str = "Asia/Shanghai"
+
+
+class TimestampBatchRowResponse(BaseModel):
+    line_no: int
+    source: str
+    result: str
+    valid: bool
+    error: str | None = None
+
+
+class TimestampBatchResponse(BaseModel):
+    mode: str
+    unit: str
+    timezone: str
+    rows: list[TimestampBatchRowResponse]
+    valid: bool
+    error: str | None = None
+
+
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
@@ -100,6 +159,11 @@ def text_diff_tool() -> FileResponse:
 @app.get("/tools/markdown")
 def markdown_tool() -> FileResponse:
     return FileResponse(STATIC_DIR / "markdown.html")
+
+
+@app.get("/tools/timestamp")
+def timestamp_tool() -> FileResponse:
+    return FileResponse(STATIC_DIR / "timestamp.html")
 
 
 @app.get("/health")
@@ -135,6 +199,30 @@ def compare_text(payload: TextDiffRequest) -> TextDiffResponse:
 def render_markdown(payload: MarkdownRenderRequest) -> MarkdownRenderResponse:
     result = render_markdown_payload(payload.text, decode_escapes=payload.decode_escapes)
     return MarkdownRenderResponse(**asdict(result))
+
+
+@app.get("/api/timestamp/now", response_model=TimestampNowResponse)
+def get_current_timestamp(timezone: str = "Asia/Shanghai", unit: str = "seconds") -> TimestampNowResponse:
+    result = current_timestamp(timezone=timezone, unit=unit)
+    return TimestampNowResponse(**asdict(result))
+
+
+@app.post("/api/timestamp/to-datetime", response_model=TimestampConvertResponse)
+def convert_timestamp_to_datetime(payload: TimestampToDatetimeRequest) -> TimestampConvertResponse:
+    result = timestamp_to_datetime(timestamp=payload.timestamp, timezone=payload.timezone, unit=payload.unit)
+    return TimestampConvertResponse(**asdict(result))
+
+
+@app.post("/api/timestamp/from-datetime", response_model=TimestampConvertResponse)
+def convert_datetime_to_timestamp(payload: TimestampFromDatetimeRequest) -> TimestampConvertResponse:
+    result = datetime_to_timestamp(datetime_text=payload.datetime_text, timezone=payload.timezone, unit=payload.unit)
+    return TimestampConvertResponse(**asdict(result))
+
+
+@app.post("/api/timestamp/batch", response_model=TimestampBatchResponse)
+def convert_timestamp_batch(payload: TimestampBatchRequest) -> TimestampBatchResponse:
+    result = batch_convert(text=payload.text, mode=payload.mode, timezone=payload.timezone, unit=payload.unit)
+    return TimestampBatchResponse(**asdict(result))
 
 
 def parse_cli_args(argv: list[str] | None = None) -> argparse.Namespace:

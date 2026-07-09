@@ -2,7 +2,7 @@
 
 ## 项目简介
 
-DevToolbox 是一个本地运行的开发工具包，使用 FastAPI 提供后端接口，使用原生 HTML、CSS、JavaScript 提供浏览器界面。首期包含 JSON 自动修复与格式化、文本对比、Markdown 渲染三个工具。
+DevToolbox 是一个本地运行的开发工具包，使用 FastAPI 提供后端接口，使用原生 HTML、CSS、JavaScript 提供浏览器界面。当前包含 JSON 自动修复与格式化、文本对比、Markdown 渲染、时间戳转换四个工具。
 
 ## 核心功能
 
@@ -11,6 +11,7 @@ DevToolbox 是一个本地运行的开发工具包，使用 FastAPI 提供后端
 - 文本对比：支持普通文本按行对比、文件导入、左右交换、差异统计。
 - Markdown 渲染：支持 raw Markdown 左右双栏实时预览，可将 `\n`、`\t`、`\\`、`\"`、`\uXXXX` 等转义符转换为真实含义后再渲染。
 - Markdown 渲染对比：在文本对比工具中勾选“Markdown 渲染”后，后端会先渲染并清洗 Markdown，再按可见文本计算差异。
+- 时间戳转换：显示当前秒级或毫秒级时间戳，支持时间戳与日期时间之间的单个转换。
 
 ## 环境要求
 
@@ -80,7 +81,7 @@ uvicorn devtoolbox.main:app --host 127.0.0.1 --port 8010
 DevToolbox/
 ├── devtoolbox/
 │   ├── main.py                 # FastAPI 入口、页面路由和 API 路由
-│   ├── services/               # JSON 修复、文本 diff 等服务层逻辑
+│   ├── services/               # JSON 修复、文本 diff、Markdown 渲染、时间戳转换等服务层逻辑
 │   └── static/                 # 原生前端页面、样式和脚本
 ├── tests/                      # 单元测试与接口测试
 ├── requirements.txt            # Python 依赖

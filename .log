@@ -63,3 +63,44 @@
   - uvicorn 临时启动在 127.0.0.1:8040，curl /health 返回 {"ok":true}。
   - curl /api/text-diff/compare 综合 Markdown payload：返回 mode=markdown-render，diff 行包含 "· 左项"、"1. 有序"、"字段 | 值"、"A | B/A | C"、"---"、"[图片: 旧图/新图]"。
   - 验证结束后已停止 8040 临时服务。
+
+2026-07-09 Asia/Shanghai
+- 功能开发：新增独立时间戳转换工具页，包含当前时间戳显示、切换单位、复制、停止/继续刷新、单个转换、批量转换、时间戳转日期时间、日期时间转时间戳。
+- 后端实现：新增 timestamp_service，使用 Python 标准库 datetime 与 zoneinfo，支持 Asia/Shanghai、UTC、America/New_York、Europe/London、Asia/Tokyo 和秒/毫秒单位。
+- 前端实现：新增 /tools/timestamp 页面与 timestamp_tool.js，布局参考截图的当前时间戳卡片、单个/批量分段 Tab 和横向转换工具条；主页与所有工具页导航已接入时间戳转换入口。
+- 工程同步：README.md 更新当前工具列表与服务层说明；未新增依赖，未新增 .env 配置；新增 tests/test_timestamp_service.py 并扩展 API 测试。
+- 验证记录：
+  - python3 -m py_compile devtoolbox/main.py devtoolbox/services/timestamp_service.py：通过。
+  - .venv/bin/python -m pytest：42 passed，1 个来自 FastAPI/TestClient 的 StarletteDeprecationWarning。
+  - uvicorn 临时启动在 127.0.0.1:8050，curl /health、/tools/timestamp、/api/timestamp/now、/api/timestamp/from-datetime、/api/timestamp/to-datetime、/api/timestamp/batch：通过。
+  - 浏览器关键路径：Chrome 无头验证当前时间戳刷新、切换到毫秒、停止后按钮变“继续”、时间戳转日期时间、日期时间转时间戳、批量转换 3 行含 1 行错误。
+  - 响应式检查：1440px 与 390px 视口 document/body scrollWidth 均等于 viewport width，无横向溢出。
+  - 验证结束后已停止 8050 临时服务。
+
+2026-07-09 Asia/Shanghai
+- 页面重设计：根据用户反馈重做时间戳转换页的信息架构与视觉层级，保留后端 API 和全部功能。
+- 设计调整：首屏改为左侧“当前时间戳”主卡片与右侧“快速转换”控制台；单个转换改为两张并列小卡；批量转换通过分段控件展开为宽工作区。
+- 样式调整：统一时间戳页 input/select/button 的高度、边框、焦点态和卡片样式；压缩标题区高度，控制当前时间戳数字宽度，移动端按单列排列。
+- 测试补齐：API 页面节点测试新增 timestamp-workbench、timestamp-now-card、timestamp-panel、timestamp-single-grid 等结构断言。
+- 验证记录：
+  - python3 -m py_compile devtoolbox/main.py devtoolbox/services/timestamp_service.py：通过。
+  - .venv/bin/python -m pytest：42 passed，1 个来自 FastAPI/TestClient 的 StarletteDeprecationWarning。
+  - uvicorn 临时启动在 127.0.0.1:8060，Chrome 无头验证时间戳刷新、切换毫秒、停止/继续、时间戳转日期时间、日期时间转时间戳、批量转换：通过。
+  - 响应式检查：桌面初始态、毫秒态、批量态和 390px 移动视口均无横向溢出。
+  - 视觉检查：截图确认当前时间戳主卡片、快速转换控制台和分段 Tab 层级清晰，控件不再呈散乱原生表单状态。
+  - 验证结束后已停止 8060 临时服务。
+
+2026-07-09 15:17 Asia/Shanghai
+- 页面优化：按文本对比工具的大框样式重排时间戳转换页，改为“当前时间”“日期时间 -> 时间戳”“时间戳 -> 日期时间”三个 workspace-card 区域。
+- 前端收敛：移除页面中的批量转换 Tab、批量输入、批量结果和相关 JS 事件绑定；后端 /api/timestamp/batch 与服务端批量测试保留。
+- 样式统一：时间戳页复用全局卡片、按钮、输入框、状态栏、底色、边框和焦点态变量，清理未使用的批量/Tab 样式。
+- 文档同步：README.md 与首页工具卡片改为只描述前端可见的当前时间戳和单个转换能力。
+- 验证记录：
+  - python3 -m py_compile devtoolbox/main.py devtoolbox/services/timestamp_service.py：通过。
+  - .venv/bin/python -m pytest：43 passed，1 个来自 FastAPI/TestClient 的 StarletteDeprecationWarning。
+  - uvicorn 端口检查：127.0.0.1:8000 与 127.0.0.1:8010 已被占用，未 kill 占用进程；改用 127.0.0.1:8020 启动验证服务。
+  - Chrome/Playwright 关键路径：当前时间戳刷新、切换毫秒、复制、停止/继续、日期时间转时间戳、时间戳转日期时间均通过。
+  - 前端隐藏检查：/tools/timestamp 中 batchTab、batchPanel、batchConvertButton、batchInput 和“批量转换”文本均不存在。
+  - 响应式检查：1440px 与 390px 视口 document/body scrollWidth 均等于 viewport width，无横向溢出。
+  - 视觉检查：桌面和移动截图确认三块大框布局、字体、底色、边框与其他工具保持一致，无明显重叠。
+  - 验证结束后已停止 8020 临时服务。

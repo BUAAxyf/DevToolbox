@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>时间戳转换 - DevToolbox</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell timestamp-shell">
+      <header class="top-nav">
+        <a class="brand" href="/">
+          <span class="brand-mark">DT</span>
+          <span>DevToolbox</span>
+        </a>
+        <nav class="nav-links" aria-label="工具导航">
+          <a href="/tools/json">JSON 修复</a>
+          <a href="/tools/text-diff">文本对比</a>
+          <a href="/tools/markdown">Markdown 渲染</a>
+          <a class="active" href="/tools/timestamp">时间戳转换</a>
+        </nav>
+      </header>
+
+      <section class="tool-header timestamp-header">
+        <div>
+          <p class="eyebrow">timestamp converter</p>
+          <h1>时间戳转换</h1>
+          <p>查看当前时间戳，支持秒级和毫秒级互切；也可以在日期时间和时间戳之间进行单个转换。</p>
+        </div>
+      </section>
+
+      <section class="timestamp-workbench" aria-label="时间戳转换工作台">
+        <article class="workspace-card timestamp-card timestamp-now-card" aria-label="当前时间">
+          <div class="workspace-title">
+            <span>当前时间</span>
+            <span class="soft-badge">Asia/Shanghai</span>
+          </div>
+          <div class="timestamp-current-line">
+            <strong id="currentTimestamp">--</strong>
+            <span id="currentUnitLabel">秒</span>
+          </div>
+          <div class="timestamp-meta-grid">
+            <span>可读时间</span>
+            <strong id="currentDatetime">Asia/Shanghai</strong>
+          </div>
+          <div class="timestamp-actions" aria-label="当前时间戳操作">
+            <button id="toggleUnitButton" class="button secondary" type="button">切换单位</button>
+            <button id="copyCurrentButton" class="button secondary" type="button">复制</button>
+            <button id="pauseNowButton" class="button danger" type="button">停止</button>
+          </div>
+        </article>
+
+        <article class="workspace-card timestamp-card timestamp-converter-card" aria-label="日期时间转时间戳">
+          <div class="workspace-title">
+            <span>日期时间 -&gt; 时间戳</span>
+            <span class="soft-badge">datetime to timestamp</span>
+          </div>
+          <label class="timestamp-field">
+            <span>日期时间</span>
+            <input id="datetimeInput" class="name-input timestamp-input" type="text" value="2026-06-23 10:11:54" aria-label="日期时间输入" />
+          </label>
+          <div class="timestamp-option-grid">
+            <label class="timestamp-field">
+              <span>时区</span>
+              <select id="datetimeTimezone" class="timestamp-select timezone-select" aria-label="源时区">
+                <option value="Asia/Shanghai">Asia/Shanghai</option>
+                <option value="UTC">UTC</option>
+                <option value="America/New_York">America/New_York</option>
+                <option value="Europe/London">Europe/London</option>
+                <option value="Asia/Tokyo">Asia/Tokyo</option>
+              </select>
+            </label>
+            <label class="timestamp-field">
+              <span>单位</span>
+              <select id="datetimeUnit" class="timestamp-select" aria-label="输出单位">
+                <option value="seconds">秒(s)</option>
+                <option value="milliseconds">毫秒(ms)</option>
+              </select>
+            </label>
+          </div>
+          <button id="dateToTimestampButton" class="button primary timestamp-wide-button" type="button">转换</button>
+          <label class="timestamp-field">
+            <span>结果</span>
+            <input id="datetimeResult" class="name-input timestamp-input timestamp-result" type="text" placeholder="转换结果" readonly aria-label="日期时间转换结果" />
+          </label>
+        </article>
+
+        <article class="workspace-card timestamp-card timestamp-converter-card" aria-label="时间戳转日期时间">
+          <div class="workspace-title">
+            <span>时间戳 -&gt; 日期时间</span>
+            <span class="soft-badge">timestamp to datetime</span>
+          </div>
+          <label class="timestamp-field">
+            <span>时间戳</span>
+            <input id="timestampInput" class="name-input timestamp-input" type="text" value="1782180714232" aria-label="时间戳输入" />
+          </label>
+          <div class="timestamp-option-grid">
+            <label class="timestamp-field">
+              <span>单位</span>
+              <select id="timestampUnit" class="timestamp-select" aria-label="时间戳单位">
+                <option value="milliseconds">毫秒(ms)</option>
+                <option value="seconds">秒(s)</option>
+              </select>
+            </label>
+            <label class="timestamp-field">
+              <span>时区</span>
+              <select id="timestampTimezone" class="timestamp-select timezone-select" aria-label="目标时区">
+                <option value="Asia/Shanghai">Asia/Shanghai</option>
+                <option value="UTC">UTC</option>
+                <option value="America/New_York">America/New_York</option>
+                <option value="Europe/London">Europe/London</option>
+                <option value="Asia/Tokyo">Asia/Tokyo</option>
+              </select>
+            </label>
+          </div>
+          <button id="timestampToDateButton" class="button primary timestamp-wide-button" type="button">转换</button>
+          <label class="timestamp-field">
+            <span>结果</span>
+            <input id="timestampResult" class="name-input timestamp-input timestamp-result" type="text" placeholder="转换结果" readonly aria-label="时间戳转换结果" />
+          </label>
+        </article>
+      </section>
+
+      <p id="timestampStatus" class="status timestamp-status" role="status">等待转换</p>
+    </main>
+
+    <script src="/static/timestamp_tool.js"></script>
+  </body>
+</html>

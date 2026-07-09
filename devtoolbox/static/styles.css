@@ -175,7 +175,7 @@ h2 {
 
 .tool-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -250,6 +250,16 @@ h2 {
 
 .button.primary:hover {
   background: var(--blue-dark);
+}
+
+.button.danger {
+  border-color: #dd2f33;
+  background: #dd2f33;
+  color: #fff;
+}
+
+.button.danger:hover {
+  background: #bd2328;
 }
 
 .button.secondary,
@@ -787,6 +797,145 @@ tr.context-row td {
   color: var(--amber);
 }
 
+.timestamp-workbench {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+.timestamp-workbench .workspace-card {
+  min-height: 390px;
+}
+
+.timestamp-card {
+  gap: 14px;
+}
+
+.timestamp-converter-card {
+  justify-content: flex-start;
+}
+
+.timestamp-field {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.timestamp-field span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.timestamp-option-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.timestamp-select {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  outline: none;
+  appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, #8d98a5 50%) calc(100% - 18px) 50% / 7px 7px no-repeat,
+    linear-gradient(135deg, #8d98a5 50%, transparent 50%) calc(100% - 12px) 50% / 7px 7px no-repeat,
+    #fff;
+  color: var(--graphite);
+  font-weight: 800;
+  padding: 7px 34px 7px 10px;
+}
+
+.timestamp-select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(36, 87, 214, 0.13);
+}
+
+.timestamp-input {
+  min-width: 0;
+  color: var(--graphite);
+}
+
+.timestamp-result {
+  background: var(--surface-strong);
+  color: var(--ink);
+}
+
+.timestamp-wide-button {
+  width: 100%;
+  min-height: 38px;
+}
+
+.timestamp-current-line {
+  display: flex;
+  min-height: 110px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--code-bg);
+  color: var(--graphite);
+  padding: 18px;
+}
+
+.timestamp-current-line strong {
+  min-width: 0;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.timestamp-current-line span {
+  color: var(--muted);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.timestamp-meta-grid {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px 12px;
+}
+
+.timestamp-meta-grid span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.timestamp-meta-grid strong {
+  min-width: 0;
+  overflow: hidden;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timestamp-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+}
+
 @media (max-width: 980px) {
   .app-shell {
     width: min(100% - 24px, 760px);
@@ -799,7 +948,9 @@ tr.context-row td {
   .editor-grid,
   .diff-input-grid,
   .markdown-grid,
-  .diff-board {
+  .diff-board,
+  .timestamp-workbench,
+  .timestamp-option-grid {
     grid-template-columns: 1fr;
   }
 
@@ -834,5 +985,22 @@ tr.context-row td {
 
   .mode-note {
     grid-column: 1 / -1;
+  }
+
+  .timestamp-workbench .workspace-card {
+    min-height: 0;
+  }
+
+  .timestamp-current-line strong {
+    font-size: 30px;
+  }
+
+  .timestamp-meta-grid {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .timestamp-meta-grid strong {
+    text-align: left;
   }
 }
