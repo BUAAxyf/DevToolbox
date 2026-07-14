@@ -133,3 +133,19 @@
   - Chrome/Playwright：textarea wrap 属性切换、左右按钮同步、长文本适配宽度、格式化/复制/换行同排均通过。
   - 响应式检查：1440px 与 390px 视口无页面级横向溢出，三个结果操作按钮保持同一行。
   - 8070 临时服务验证后正常停止；未终止其他占用进程。
+
+2026-07-14 Asia/Shanghai
+- 页面优化：JSON 结果区开启自动换行后继续显示逻辑行号和层级折叠箭头。
+- 渲染调整：将结果区原先相互独立的行号、折叠栏和正文改为逐逻辑行的三列网格；长行换成多个视觉行时，同一逻辑行的栏位同步增高，后续行号不会错位。
+- 交互保持：换行状态下折叠箭头仍可展开和折叠层级，复制结果继续使用完整原始结果文本；横向滚动状态下行号与箭头栏保持固定。
+- 缓存处理：JSON 页面静态 CSS 和 JS 版本更新为 20260714-1，避免浏览器继续使用旧布局。
+- 测试同步：页面接口测试更新结果容器结构和静态资源版本断言。
+- 工程同步：README.md、requirements.txt、.env* 与 .gitignore 无需修改。
+- 验证记录：
+  - node --check devtoolbox/static/json_tool.js：通过。
+  - .venv/bin/python -m pytest tests/test_api.py -q：18 passed，1 个既有 StarletteDeprecationWarning。
+  - .venv/bin/python -m pytest：44 passed，1 个既有 StarletteDeprecationWarning。
+  - Chrome/Playwright：换行后显示 22 个逻辑行号和 7 个折叠箭头；行号栏、折叠栏与正文行高度对齐，折叠/展开与完整复制回归通过。
+  - 响应式检查：1440px 与 390px 视口均保留结果栏且无页面级横向溢出。
+  - 8070 临时服务验证后正常停止；未终止其他占用进程。
+- Git 权限：git push --dry-run 因 GitHub SSH publickey 权限失败；按工作区交付模式保留修改，未提交、未推送。

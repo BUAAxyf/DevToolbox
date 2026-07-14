@@ -1,8 +1,6 @@
 const rawInput = document.querySelector("#rawInput");
 const rawLineNumbers = document.querySelector("#rawLineNumbers");
 const resultViewer = document.querySelector("#resultViewer");
-const resultLineNumbers = document.querySelector("#resultLineNumbers");
-const foldGutter = document.querySelector("#foldGutter");
 const resultOutput = document.querySelector("#resultOutput");
 const statusText = document.querySelector("#status");
 const formatButton = document.querySelector("#formatButton");
@@ -100,39 +98,39 @@ function renderResult(text) {
   resultText = text;
   const lines = text ? text.split("\n") : [""];
   const ranges = findFoldRanges(lines);
-  const visibleLines = [];
-  const visibleLineNumbers = [];
-  const gutterItems = [];
+  const rows = [];
 
   for (let index = 0; index < lines.length; index += 1) {
     const range = ranges.get(index);
     const isCollapsed = foldedRanges.has(index) && range;
-
-    visibleLineNumbers.push(index + 1);
+    let foldControl = "";
+    let lineContent = escapeHtml(lines[index]);
 
     if (range) {
       const arrow = isCollapsed ? "▶" : "▼";
       const label = isCollapsed ? "展开层级" : "折叠层级";
-      gutterItems.push(
-        `<button class="fold-button" type="button" data-line="${index}" aria-label="${label} ${index + 1} 行">${arrow}</button>`,
-      );
-    } else {
-      gutterItems.push('<div class="fold-placeholder"></div>');
+      foldControl = `<button class="fold-button" type="button" data-line="${index}" aria-label="${label} ${index + 1} 行">${arrow}</button>`;
     }
 
     if (isCollapsed) {
       const skippedCount = range.end - index;
-      visibleLines.push(`${escapeHtml(lines[index])} <span class="collapsed-marker">… ${skippedCount} 行已折叠</span>`);
-      index = range.end;
-      continue;
+      lineContent += ` <span class="collapsed-marker">… ${skippedCount} 行已折叠</span>`;
     }
 
-    visibleLines.push(escapeHtml(lines[index]));
+    rows.push(
+      `<div class="result-line" data-source-line="${index}">` +
+        `<span class="result-line-number" aria-hidden="true">${index + 1}</span>` +
+        `<span class="result-fold-cell">${foldControl}</span>` +
+        `<span class="result-code-line">${lineContent}</span>` +
+      `</div>`,
+    );
+
+    if (isCollapsed) {
+      index = range.end;
+    }
   }
 
-  resultLineNumbers.textContent = visibleLineNumbers.join("\n") || "1";
-  foldGutter.innerHTML = gutterItems.join("");
-  resultOutput.innerHTML = visibleLines.join("\n");
+  resultOutput.innerHTML = rows.join("");
 }
 
 function setResultText(text, { resetFolds = false } = {}) {
