@@ -8,7 +8,11 @@ const statusText = document.querySelector("#status");
 const formatButton = document.querySelector("#formatButton");
 const fontSizeInput = document.querySelector("#fontSizeInput");
 const resultModeLabel = document.querySelector("#resultModeLabel");
+const editorGrid = document.querySelector("#jsonEditorGrid");
+const copyInputButton = document.querySelector("#copyInputButton");
 const copyResultButton = document.querySelector("#copyResultButton");
+const wrapInputButton = document.querySelector("#wrapInputButton");
+const wrapResultButton = document.querySelector("#wrapResultButton");
 const clearInputButton = document.querySelector("#clearInputButton");
 
 let repairTimer;
@@ -17,6 +21,7 @@ let resultText = "";
 let repairedText = "";
 let formattedText = "";
 let isFormattedView = false;
+let isWrapped = false;
 let foldedRanges = new Map();
 
 function setStatus(message, state = "") {
@@ -50,6 +55,14 @@ function updateFormatButton() {
   formatButton.textContent = isFormattedView ? "原文" : "格式化";
   formatButton.dataset.mode = isFormattedView ? "formatted" : "repaired";
   resultModeLabel.textContent = isFormattedView ? "格式化视图" : "修复视图";
+}
+
+function updateWrapButtons() {
+  const label = isWrapped ? "取消换行" : "换行";
+  [wrapInputButton, wrapResultButton].forEach((button) => {
+    button.textContent = label;
+    button.setAttribute("aria-pressed", String(isWrapped));
+  });
 }
 
 function getIndent(line) {
@@ -232,12 +245,35 @@ async function formatOutput() {
 }
 
 async function copyResult() {
-  if (!resultText) {
-    setStatus("当前没有可复制的结果", "error");
+  await copyText(resultText, "当前没有可复制的结果", "结果已复制到剪贴板");
+}
+
+async function copyText(text, emptyMessage, successMessage) {
+  if (!text) {
+    setStatus(emptyMessage, "error");
     return;
   }
-  await navigator.clipboard.writeText(resultText);
-  setStatus("结果已复制到剪贴板", "success");
+
+  try {
+    await navigator.clipboard.writeText(text);
+    setStatus(successMessage, "success");
+  } catch {
+    setStatus("复制失败，请检查剪贴板权限", "error");
+  }
+}
+
+function toggleWrap() {
+  isWrapped = !isWrapped;
+  rawInput.setAttribute("wrap", isWrapped ? "soft" : "off");
+  resultOutput.classList.toggle("soft-wrap", isWrapped);
+  editorGrid.classList.toggle("wrap-enabled", isWrapped);
+
+  if (isWrapped && foldedRanges.size > 0) {
+    setResultText(resultText, { resetFolds: true });
+  }
+
+  updateWrapButtons();
+  setStatus(isWrapped ? "已开启双栏自动换行" : "已关闭双栏自动换行", "success");
 }
 
 rawInput.addEventListener("input", scheduleRepair);
@@ -259,7 +295,12 @@ resultViewer.addEventListener("click", (event) => {
 });
 
 formatButton.addEventListener("click", formatOutput);
+copyInputButton.addEventListener("click", () => {
+  copyText(rawInput.value, "当前没有可复制的原始输入", "原始输入已复制到剪贴板");
+});
 copyResultButton.addEventListener("click", copyResult);
+wrapInputButton.addEventListener("click", toggleWrap);
+wrapResultButton.addEventListener("click", toggleWrap);
 clearInputButton.addEventListener("click", () => {
   rawInput.value = "";
   updateRawLineNumbers();
@@ -270,6 +311,6 @@ fontSizeInput.addEventListener("change", () => updateFontSize(fontSizeInput.valu
 fontSizeInput.addEventListener("input", () => updateFontSize(fontSizeInput.value));
 
 updateFormatButton();
+updateWrapButtons();
 updateRawLineNumbers();
 renderResult("");
-

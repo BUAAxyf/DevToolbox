@@ -332,6 +332,25 @@ h2 {
   font-weight: 900;
 }
 
+.editor-grid .workspace-title {
+  flex-wrap: wrap;
+}
+
+.workspace-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.ghost-button[aria-pressed="true"] {
+  border-color: var(--blue);
+  background: rgba(36, 87, 214, 0.1);
+  color: var(--blue);
+}
+
 .editor-shell {
   position: relative;
   display: grid;
@@ -423,6 +442,31 @@ h2 {
 .code-output {
   overflow: visible;
   background: transparent;
+}
+
+.editor-grid.wrap-enabled .editor-shell {
+  overflow-x: hidden;
+}
+
+.editor-grid.wrap-enabled .input-shell,
+.editor-grid.wrap-enabled .result-viewer {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.editor-grid.wrap-enabled .line-numbers,
+.editor-grid.wrap-enabled .fold-gutter {
+  display: none;
+}
+
+.editor-shell textarea[wrap="soft"],
+.code-output.soft-wrap {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.editor-shell textarea[wrap="soft"] {
+  overflow-x: hidden;
 }
 
 .editor-shell:focus-within,

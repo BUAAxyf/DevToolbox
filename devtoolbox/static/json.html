@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JSON 自动修复与格式化 - DevToolbox</title>
-    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260710-2" />
   </head>
   <body>
     <main class="app-shell">
@@ -32,27 +32,34 @@
             字号
             <input id="fontSizeInput" type="number" min="11" max="24" step="1" value="14" />
           </label>
-          <button id="formatButton" class="button primary" type="button" data-mode="repaired">格式化</button>
-          <button id="copyResultButton" class="button secondary" type="button">复制结果</button>
         </div>
       </section>
 
-      <section class="editor-grid" aria-label="JSON 编辑区">
+      <section id="jsonEditorGrid" class="editor-grid" aria-label="JSON 编辑区">
         <article class="workspace-card">
           <div class="workspace-title">
             <span>原始输入</span>
-            <button id="clearInputButton" class="ghost-button" type="button">清空</button>
+            <div class="workspace-actions">
+              <button id="copyInputButton" class="ghost-button" type="button">复制</button>
+              <button id="wrapInputButton" class="ghost-button" type="button" aria-pressed="false">换行</button>
+              <button id="clearInputButton" class="ghost-button" type="button">清空</button>
+            </div>
           </div>
           <div class="editor-shell input-shell">
             <pre id="rawLineNumbers" class="line-numbers" aria-hidden="true">1</pre>
-            <textarea id="rawInput" spellcheck="false" placeholder="在这里粘贴可能不规范的 JSON / Python dict 文本"></textarea>
+            <textarea id="rawInput" wrap="off" spellcheck="false" placeholder="在这里粘贴可能不规范的 JSON / Python dict 文本"></textarea>
           </div>
         </article>
 
         <article class="workspace-card">
           <div class="workspace-title">
             <span>修复 / 格式化结果</span>
-            <span id="resultModeLabel" class="soft-badge">修复视图</span>
+            <div id="resultActions" class="workspace-actions">
+              <span id="resultModeLabel" class="soft-badge">修复视图</span>
+              <button id="formatButton" class="button primary" type="button" data-mode="repaired">格式化</button>
+              <button id="copyResultButton" class="ghost-button" type="button">复制</button>
+              <button id="wrapResultButton" class="ghost-button" type="button" aria-pressed="false">换行</button>
+            </div>
           </div>
           <div id="resultViewer" class="editor-shell result-viewer" role="region" aria-label="修复和格式化结果">
             <pre id="resultLineNumbers" class="line-numbers" aria-hidden="true">1</pre>
@@ -65,6 +72,6 @@
       <p id="status" class="status" role="status">等待输入</p>
     </main>
 
-    <script src="/static/json_tool.js"></script>
+    <script src="/static/json_tool.js?v=20260710-2"></script>
   </body>
 </html>

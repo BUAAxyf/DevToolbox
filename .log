@@ -104,3 +104,32 @@
   - 响应式检查：1440px 与 390px 视口 document/body scrollWidth 均等于 viewport width，无横向溢出。
   - 视觉检查：桌面和移动截图确认三块大框布局、字体、底色、边框与其他工具保持一致，无明显重叠。
   - 验证结束后已停止 8020 临时服务。
+
+2026-07-10 Asia/Shanghai
+- 页面优化：JSON 修复页在左右编辑框右上角分别新增“复制”和“换行”按钮，移除顶部重复的“复制结果”入口，保留字号与格式化操作。
+- 交互实现：左侧复制原始输入，右侧始终复制当前修复或格式化视图的完整文本；左右换行按钮共享状态，可同步开启或关闭自动换行。
+- 布局处理：开启换行时展开已折叠内容并隐藏两侧行号及右侧折叠栏，避免软换行导致行号错位；关闭后恢复横向滚动、行号和折叠控制。
+- 测试补齐：JSON 页面接口测试新增双栏复制、换行、清空和格式化控件断言。
+- 工程同步：README.md 更新 JSON 工具能力描述；requirements.txt、.env* 与 .gitignore 无需调整。
+- 验证记录：
+  - node --check devtoolbox/static/json_tool.js：通过。
+  - .venv/bin/python -m pytest：44 passed，1 个来自 FastAPI/TestClient 的 StarletteDeprecationWarning。
+  - 8070 端口未被占用，启动临时服务完成 Chrome/Playwright 验收后正常停止；未终止其他进程。
+  - 浏览器关键路径：空内容复制提示、左右内容复制、折叠后完整结果复制、双栏同步换行、行号和折叠栏隐藏/恢复均通过。
+  - 响应式检查：1440px 与 390px 视口无页面级横向溢出，标题操作按钮无重叠。
+  - 浏览器页面脚本错误为 0；服务仍存在既有 /favicon.ico 404，不影响本次功能。
+- Git 权限：origin 使用 GitHub SSH，git push --dry-run 因 publickey 权限失败；按工作区交付模式保留本地修改，未提交、未推送。
+
+2026-07-10 Asia/Shanghai
+- 问题修复：针对用户反馈的 JSON 页“换行按钮无法使用”，复现确认点击事件和 CSS 类在 Chrome 中可触发，但 textarea 未设置标准 wrap 状态，原实现完全依赖 CSS，且静态资源 URL 未变化时可能继续命中旧脚本缓存。
+- 换行加固：rawInput 默认显式使用 wrap="off"，点击后在 off/soft 间切换；结果区同步切换 soft-wrap 类，继续保持双栏按钮状态、行号和折叠栏行为一致。
+- 缓存处理：JSON 页的 styles.css 与 json_tool.js 增加版本查询参数，确保浏览器加载本轮脚本和样式。
+- 布局优化：将“格式化”按钮从页面顶部移动到右侧结果框操作区，与“复制”“换行”保持同一行；窄屏时操作组整体换行，按钮内部不拆行。
+- 测试补齐：页面接口测试增加 rawInput 初始 wrap 状态、静态资源版本和格式化按钮所在操作区的断言。
+- 验证记录：
+  - node --check devtoolbox/static/json_tool.js：通过。
+  - .venv/bin/python -m pytest tests/test_api.py -q：18 passed，1 个既有 StarletteDeprecationWarning。
+  - .venv/bin/python -m pytest：44 passed，1 个既有 StarletteDeprecationWarning。
+  - Chrome/Playwright：textarea wrap 属性切换、左右按钮同步、长文本适配宽度、格式化/复制/换行同排均通过。
+  - 响应式检查：1440px 与 390px 视口无页面级横向溢出，三个结果操作按钮保持同一行。
+  - 8070 临时服务验证后正常停止；未终止其他占用进程。

@@ -39,6 +39,32 @@ def test_json_api_repair_and_format() -> None:
     assert format_response.json()["formatted"] == '{\n  "a": 1\n}'
 
 
+def test_json_page_contains_copy_and_wrap_controls() -> None:
+    response = client.get("/tools/json")
+
+    assert response.status_code == 200
+    for marker in [
+        'id="jsonEditorGrid"',
+        'id="resultActions"',
+        'id="copyInputButton"',
+        'id="copyResultButton"',
+        'id="wrapInputButton"',
+        'id="wrapResultButton"',
+        'id="clearInputButton"',
+        'id="formatButton"',
+    ]:
+        assert marker in response.text
+    assert response.text.count('id="copyResultButton"') == 1
+    assert 'id="rawInput" wrap="off"' in response.text
+    assert "/static/json_tool.js?v=20260710-2" in response.text
+
+    toolbar_end = response.text.index("</div>", response.text.index('class="toolbar"'))
+    result_actions_start = response.text.index('id="resultActions"')
+    result_viewer_start = response.text.index('id="resultViewer"')
+    format_button_position = response.text.index('id="formatButton"')
+    assert toolbar_end < result_actions_start < format_button_position < result_viewer_start
+
+
 def test_text_diff_api_plain_text() -> None:
     response = client.post(
         "/api/text-diff/compare",
