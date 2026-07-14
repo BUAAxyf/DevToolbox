@@ -149,3 +149,20 @@
   - 响应式检查：1440px 与 390px 视口均保留结果栏且无页面级横向溢出。
   - 8070 临时服务验证后正常停止；未终止其他占用进程。
 - Git 权限：git push --dry-run 因 GitHub SSH publickey 权限失败；按工作区交付模式保留修改，未提交、未推送。
+
+2026-07-14 Asia/Shanghai
+- 页面优化：JSON 原始输入区新增与结果区一致的逻辑行号和层级折叠箭头，并在自动换行状态下继续显示。
+- 输入渲染：使用隐藏测量镜像按 textarea 实际宽度计算每个逻辑行的视觉高度，使输入区行号栏、折叠栏与长行换行高度同步。
+- 折叠行为：原始完整文本与折叠可见文本分离；箭头折叠仅改变查看视图，复制和自动修复继续使用完整原文，聚焦输入框时自动展开全部层级后再编辑。
+- 滚动与字号：输入框滚动、宽度变化和字号变化时同步更新行号及折叠栏位置和高度。
+- 缓存处理：JSON 页面静态 CSS 和 JS 版本更新为 20260714-2。
+- 测试同步：页面接口测试增加输入区行号栏、折叠栏、测量镜像和静态资源版本断言。
+- 工程同步：README.md、requirements.txt、.env* 与 .gitignore 无需修改。
+- 验证记录：
+  - node --check devtoolbox/static/json_tool.js：通过。
+  - .venv/bin/python -m pytest tests/test_api.py -q：18 passed，1 个既有 StarletteDeprecationWarning。
+  - .venv/bin/python -m pytest：44 passed，1 个既有 StarletteDeprecationWarning。
+  - Chrome/Playwright：原始输入显示 23 个逻辑行号和 7 个折叠箭头；换行高度同步、折叠后完整复制、聚焦自动展开、继续编辑和结果区回归通过。
+  - 响应式检查：1440px 与 390px 视口输入区行号和箭头均正常显示，无页面级横向溢出。
+  - 8070 临时服务验证后正常停止；未终止其他占用进程。
+- Git 权限：git push --dry-run 因 GitHub SSH publickey 权限失败；按工作区交付模式保留修改，未提交、未推送。

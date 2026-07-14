@@ -46,6 +46,9 @@ def test_json_page_contains_copy_and_wrap_controls() -> None:
     for marker in [
         'id="jsonEditorGrid"',
         'id="resultActions"',
+        'id="rawLineNumbers"',
+        'id="rawFoldGutter"',
+        'id="rawMeasure"',
         'id="copyInputButton"',
         'id="copyResultButton"',
         'id="wrapInputButton"',
@@ -59,7 +62,7 @@ def test_json_page_contains_copy_and_wrap_controls() -> None:
     assert '<div id="resultOutput" class="code-output"' in response.text
     assert 'id="resultLineNumbers"' not in response.text
     assert 'id="foldGutter"' not in response.text
-    assert "/static/json_tool.js?v=20260714-1" in response.text
+    assert "/static/json_tool.js?v=20260714-2" in response.text
 
     toolbar_end = response.text.index("</div>", response.text.index('class="toolbar"'))
     result_actions_start = response.text.index('id="resultActions"')

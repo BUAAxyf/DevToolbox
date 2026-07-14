@@ -1,5 +1,7 @@
 const rawInput = document.querySelector("#rawInput");
 const rawLineNumbers = document.querySelector("#rawLineNumbers");
+const rawFoldGutter = document.querySelector("#rawFoldGutter");
+const rawMeasure = document.querySelector("#rawMeasure");
 const resultViewer = document.querySelector("#resultViewer");
 const resultOutput = document.querySelector("#resultOutput");
 const statusText = document.querySelector("#status");
@@ -14,12 +16,15 @@ const wrapResultButton = document.querySelector("#wrapResultButton");
 const clearInputButton = document.querySelector("#clearInputButton");
 
 let repairTimer;
+let rawGutterFrame;
 let activeRequest = 0;
+let rawSourceText = rawInput.value;
 let resultText = "";
 let repairedText = "";
 let formattedText = "";
 let isFormattedView = false;
 let isWrapped = false;
+let rawFoldedRanges = new Map();
 let foldedRanges = new Map();
 
 function setStatus(message, state = "") {
@@ -34,19 +39,12 @@ function escapeHtml(text) {
     .replaceAll(">", "&gt;");
 }
 
-function lineNumbers(count) {
-  return Array.from({ length: Math.max(count, 1) }, (_, index) => index + 1).join("\n");
-}
-
-function updateRawLineNumbers() {
-  rawLineNumbers.textContent = lineNumbers(rawInput.value.split("\n").length);
-}
-
 function updateFontSize(size) {
   const nextSize = Math.min(Math.max(Number(size) || 14, 11), 24);
   document.documentElement.style.setProperty("--editor-font-size", `${nextSize}px`);
   document.documentElement.style.setProperty("--line-height", `${Math.round(nextSize * 1.55 * 10) / 10}px`);
   fontSizeInput.value = String(nextSize);
+  scheduleRawGutterRender();
 }
 
 function updateFormatButton() {
@@ -92,6 +90,86 @@ function findFoldRanges(lines) {
   });
 
   return ranges;
+}
+
+function rawVisibleLines() {
+  const lines = rawSourceText ? rawSourceText.split("\n") : [""];
+  const ranges = findFoldRanges(lines);
+  const visibleLines = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const range = ranges.get(index);
+    const isCollapsed = rawFoldedRanges.has(index) && range;
+    let displayText = lines[index];
+
+    if (isCollapsed) {
+      displayText += ` … ${range.end - index} 行已折叠`;
+    }
+
+    visibleLines.push({ sourceLine: index, displayText, range, isCollapsed });
+
+    if (isCollapsed) {
+      index = range.end;
+    }
+  }
+
+  return visibleLines;
+}
+
+function rawLineHeights(visibleLines) {
+  rawMeasure.style.width = `${rawInput.clientWidth}px`;
+  rawMeasure.classList.toggle("soft-wrap", isWrapped);
+  rawMeasure.innerHTML = visibleLines
+    .map(({ displayText }) => `<span class="raw-measure-line">${escapeHtml(displayText) || " "}</span>`)
+    .join("");
+
+  return Array.from(rawMeasure.children, line => Math.max(line.getBoundingClientRect().height, 1));
+}
+
+function renderRawGutters(visibleLines = rawVisibleLines()) {
+  const lineHeights = rawLineHeights(visibleLines);
+
+  rawLineNumbers.innerHTML = visibleLines
+    .map(({ sourceLine }, index) => `<div class="raw-gutter-row" style="height:${lineHeights[index]}px">${sourceLine + 1}</div>`)
+    .join("");
+  rawFoldGutter.innerHTML = visibleLines
+    .map(({ sourceLine, range, isCollapsed }, index) => {
+      let control = "";
+      if (range) {
+        const arrow = isCollapsed ? "▶" : "▼";
+        const label = isCollapsed ? "展开层级" : "折叠层级";
+        control = `<button class="fold-button" type="button" data-line="${sourceLine}" aria-label="${label} ${sourceLine + 1} 行">${arrow}</button>`;
+      }
+      return `<div class="raw-fold-row" style="height:${lineHeights[index]}px">${control}</div>`;
+    })
+    .join("");
+  rawLineNumbers.scrollTop = rawInput.scrollTop;
+  rawFoldGutter.scrollTop = rawInput.scrollTop;
+}
+
+function scheduleRawGutterRender() {
+  cancelAnimationFrame(rawGutterFrame);
+  rawGutterFrame = requestAnimationFrame(() => renderRawGutters());
+}
+
+function renderRawInput() {
+  const visibleLines = rawVisibleLines();
+  const displayText = visibleLines.map(({ displayText: line }) => line).join("\n");
+  const scrollTop = rawInput.scrollTop;
+
+  if (rawInput.value !== displayText) {
+    rawInput.value = displayText;
+  }
+  rawInput.scrollTop = scrollTop;
+  renderRawGutters(visibleLines);
+}
+
+function expandRawFoldsForEditing() {
+  if (rawFoldedRanges.size === 0) return;
+
+  rawFoldedRanges = new Map();
+  renderRawInput();
+  setStatus("已展开原始输入，可继续编辑", "success");
 }
 
 function renderResult(text) {
@@ -163,10 +241,8 @@ async function postJson(endpoint, text) {
 }
 
 async function repairInput() {
-  const text = rawInput.value;
+  const text = rawSourceText;
   const requestId = ++activeRequest;
-
-  updateRawLineNumbers();
 
   if (!text.trim()) {
     resetResultState("");
@@ -194,7 +270,7 @@ async function repairInput() {
 }
 
 function scheduleRepair() {
-  updateRawLineNumbers();
+  scheduleRawGutterRender();
   clearTimeout(repairTimer);
   repairTimer = setTimeout(repairInput, 250);
 }
@@ -216,7 +292,7 @@ async function formatOutput() {
     return;
   }
 
-  const text = repairedText || resultText || rawInput.value;
+  const text = repairedText || resultText || rawSourceText;
 
   if (!text.trim()) {
     setStatus("请输入需要格式化的内容", "error");
@@ -271,12 +347,34 @@ function toggleWrap() {
   }
 
   updateWrapButtons();
+  scheduleRawGutterRender();
   setStatus(isWrapped ? "已开启双栏自动换行" : "已关闭双栏自动换行", "success");
 }
 
-rawInput.addEventListener("input", scheduleRepair);
+rawInput.addEventListener("focus", expandRawFoldsForEditing);
+rawInput.addEventListener("input", () => {
+  rawSourceText = rawInput.value;
+  rawFoldedRanges = new Map();
+  scheduleRepair();
+});
 rawInput.addEventListener("scroll", () => {
   rawLineNumbers.scrollTop = rawInput.scrollTop;
+  rawFoldGutter.scrollTop = rawInput.scrollTop;
+});
+
+rawFoldGutter.addEventListener("click", (event) => {
+  const button = event.target.closest(".fold-button");
+  if (!button) return;
+
+  const line = Number(button.dataset.line);
+  const isCollapsed = rawFoldedRanges.has(line);
+  if (isCollapsed) {
+    rawFoldedRanges.delete(line);
+  } else {
+    rawFoldedRanges.set(line, true);
+  }
+  renderRawInput();
+  setStatus(isCollapsed ? "已展开原始输入层级" : "原始输入已折叠；点击输入框可自动展开后编辑", "success");
 });
 
 resultViewer.addEventListener("click", (event) => {
@@ -294,14 +392,16 @@ resultViewer.addEventListener("click", (event) => {
 
 formatButton.addEventListener("click", formatOutput);
 copyInputButton.addEventListener("click", () => {
-  copyText(rawInput.value, "当前没有可复制的原始输入", "原始输入已复制到剪贴板");
+  copyText(rawSourceText, "当前没有可复制的原始输入", "原始输入已复制到剪贴板");
 });
 copyResultButton.addEventListener("click", copyResult);
 wrapInputButton.addEventListener("click", toggleWrap);
 wrapResultButton.addEventListener("click", toggleWrap);
 clearInputButton.addEventListener("click", () => {
+  rawSourceText = "";
+  rawFoldedRanges = new Map();
   rawInput.value = "";
-  updateRawLineNumbers();
+  renderRawInput();
   resetResultState("");
   setStatus("等待输入");
 });
@@ -310,5 +410,6 @@ fontSizeInput.addEventListener("input", () => updateFontSize(fontSizeInput.value
 
 updateFormatButton();
 updateWrapButtons();
-updateRawLineNumbers();
+renderRawInput();
 renderResult("");
+new ResizeObserver(scheduleRawGutterRender).observe(rawInput);
